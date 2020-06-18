@@ -1,0 +1,48 @@
+version: '3'
+services:
+  web:
+    build: ./docker/web
+    ports:
+      - ${WEB_HOST_PORT}:80
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - mysql
+      - redis
+
+  composer:
+    image: composer:1.9
+    volumes:
+      - .:/app
+    command: echo true
+
+  nodejs:
+    image: node:12.18
+    volumes:
+      - .:/app
+
+  redis:
+    image: redis:5.0.0-alpine
+    restart: always
+    volumes:
+      - redis-vol:/data
+    ports:
+      - ${REDIS_HOST_PORT}:${REDIS_PORT}
+
+  mysql:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - mysql-vol:/var/lib/mysql
+    ports:
+      - ${MYSQL_HOST_PORT}:${DB_PORT}
+
+volumes:
+  mysql-vol:
+    driver: local
+  redis-vol:
+    driver: local
